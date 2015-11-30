@@ -8,17 +8,16 @@ var acorn = require('acorn');
 var falafel = require('falafel');
 var requireFromString = require('require-from-string');
 var cssKey = require('scope-styles/lib/css-symbol');
-var extend = require('xtend');
+var extractedKey = require('./extracted-key');
 
 module.exports = function(browserify, options) {
   var files = [];
   var contents = {};
-
-  var output = 'yolo.css';
   var cssStream;
+  var output = options.output;
 
-  function transform(filename) {
-    var retval = through2(function(buf, enc, next) {
+  function extractionTransform(filename) {
+    var transform = through2(function(buf, enc, next) {
       var source = buf.toString('utf8');
 
       try {
@@ -36,10 +35,10 @@ module.exports = function(browserify, options) {
 
     function error(msg) {
       var err = typeof msg === 'string' ? new Error(msg) : msg;
-      retval.emit('error', err);
+      transform.emit('error', err);
     }
 
-    return retval;
+    return transform;
   }
 
   function extractCss(source, filename) {
@@ -84,7 +83,7 @@ module.exports = function(browserify, options) {
 
   if (options.output) output = path.relative(options.rootDir, options.output);
 
-  browserify.transform(transform, {
+  browserify.transform(extractionTransform, {
     global: true
   });
 
@@ -113,10 +112,10 @@ module.exports = function(browserify, options) {
   });
 };
 
-var exporter = ';module.exports[require("scope-styles/lib/css-symbol")] = require("scope-styles-extractify/instrumented").getResults(__filename);';
+var exporter = ';module.exports[require("scope-styles-extractify/extracted-key")] = require("scope-styles-extractify/instrumented").getResults(__filename);';
 
 function getResults(instrumentedModule, filename) {
-  return requireFromString(instrumentedModule + exporter, filename)[cssKey];
+  return requireFromString(instrumentedModule + exporter, filename)[extractedKey];
 }
 
 /*
@@ -139,4 +138,3 @@ function isRequireScopeStyles(node) {
     node.arguments[0] &&
     node.arguments[0].value === 'scope-styles';
 }
-
