@@ -2,19 +2,25 @@
 
 var scopeStyles = require('scope-styles');
 
-var css = {};
+var results = {};
 
-function instrumentedScopeStyles(filename) {
-  var result = scopeStyles.apply(null, arguments);
-  css[filename] += scopeStyles.getCss(result);
-  return result;
+function instrumentScopeStyles(filename) {
+  function instrumentedScopeStyles() {
+    var result = scopeStyles.apply(null, arguments);
+    if (!results[filename]) {
+      results[filename] = {css: '', objects: {}};
+    }
+    results[filename].css += scopeStyles.getCss(result);
+    results[filename].objects[JSON.stringify(arguments)] = result;
+    return result;
+  }
+  instrumentedScopeStyles.getCSs = scopeStyles.getCss;
+  return instrumentedScopeStyles;
 }
 
-instrumentedScopeStyles.getCSs = scopeStyles.getCss;
-
 module.exports = {
-  instrument: instrumentedScopeStyles,
-  getCss: function getCss(filename) {
-    return css[filename];
+  instrument: instrumentScopeStyles,
+  getResults: function getResults(filename) {
+    return results[filename];
   }
 };

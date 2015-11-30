@@ -17,7 +17,32 @@ module.exports = function(browserify, options) {
   var output = 'yolo.css';
   var cssStream;
 
-  function extractCssTransform(source, filename) {
+  function transform(filename) {
+    var retval = through2(function(buf, enc, next) {
+      var source = buf.toString('utf8');
+
+      try {
+        var inlined = extractCss(source, filename);
+        if (inlined) {
+          source = inlined;
+        }
+      } catch (err) {
+        return error(err);
+      }
+
+      this.push(source);
+      next();
+    });
+
+    function error(msg) {
+      var err = typeof msg === 'string' ? new Error(msg) : msg;
+      retval.emit('error', err);
+    }
+
+    return retval;
+  }
+
+  function extractCss(source, filename) {
     var didInstrument = false;
     var instrumentedModule = transformAst(source, function instrumentModule(node) {
       if (isRequireScopeStyles(node)) {
@@ -30,17 +55,36 @@ module.exports = function(browserify, options) {
     });
 
     if (didInstrument) {
-      var css = getCss(instrumentedModule, filename);
-      contents[filename] = css;
+      var results = getResults(instrumentedModule, filename)
+      if (!results) {
+        return;
+      }
+      contents[filename] = results.css;
       files.push(filename);
-    }
 
-    return through2();
+      var inlinedModule = transformAst(source, function (node) {
+        if (isRequireScopeStyles(node)) {
+          var quote = node.arguments[0].raw[0][0];
+          var str = quote + 'scope-styles-extractify/inlined' + quote;
+          node.arguments[0].update(str);
+          var prepped = Object.keys(results.objects).reduce(function(acc, key) {
+            var obj = results.objects[key];
+            acc[key] = {
+              object: obj,
+              css: obj[cssKey]
+            };
+            return acc;
+          }, {});
+          node.update(node.source() + '(' + JSON.stringify(prepped) + ')');
+        }
+      });
+      return inlinedModule;
+    }
   }
 
   if (options.output) output = path.relative(options.rootDir, options.output);
 
-  browserify.transform(extractCssTransform, {
+  browserify.transform(transform, {
     global: true
   });
 
@@ -59,7 +103,7 @@ module.exports = function(browserify, options) {
           contentString += contents[file];
         });
 
-        fs.writeFile(output, contentString, ENCODING, function (error) {
+        fs.writeFile(output, contentString, 'utf8', function (error) {
           // bundle was destroyed, emit new events on `browserify`
           if (error) browserify.emit('error', error);
           browserify.emit('scoped_css_end', output);
@@ -69,10 +113,10 @@ module.exports = function(browserify, options) {
   });
 };
 
-var exporter = ';module.exports[require("scope-styles/lib/css-symbol")] = require("scope-styles-extractify/instrumented").getCss(__filename);';
+var exporter = ';module.exports[require("scope-styles/lib/css-symbol")] = require("scope-styles-extractify/instrumented").getResults(__filename);';
 
-function getCss(instrumentedModule, filename) {
-  var css = requireFromString(instrumentedModule + exporter, filename)[cssKey];
+function getResults(instrumentedModule, filename) {
+  return requireFromString(instrumentedModule + exporter, filename)[cssKey];
 }
 
 /*
