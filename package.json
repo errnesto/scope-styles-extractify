@@ -8,6 +8,7 @@
   "repository": "git@github.com:rtsao/scope-styles-extractify.git",
   "bugs": "https://github.com/rtsao/scope-styles-extractify/issues",
   "scripts": {
+    "cover": "istanbul cover test/index.js",
     "test": "node test/index.js"
   },
   "dependencies": {
@@ -20,6 +21,7 @@
   },
   "devDependencies": {
     "browserify": "^12.0.1",
+    "istanbul": "^0.4.1",
     "tape": "^4.2.2"
   },
   "license": "MIT"
