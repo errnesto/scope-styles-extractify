@@ -92,14 +92,16 @@ module.exports = function(browserify, options) {
 
     bundle.emit('scoped_css_stream', cssStream);
     bundle.on('end', function () {
+      var contentString = '';
+
+      files.forEach(function(file) {
+        contentString += contents[file];
+      });
+
+      cssStream.push(contentString);
       cssStream.push(null);
+
       if (output) {
-        var contentString = '';
-
-        files.forEach(function(file) {
-          contentString += contents[file];
-        });
-
         fs.writeFile(output, contentString, 'utf8', function (error) {
           // bundle was destroyed, emit new events on `browserify`
           if (error) browserify.emit('error', error);
