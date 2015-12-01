@@ -9,7 +9,8 @@
   "bugs": "https://github.com/rtsao/scope-styles-extractify/issues",
   "scripts": {
     "cover": "istanbul cover test/index.js",
-    "test": "node test/index.js"
+    "test": "node test/index.js",
+    "travis-test": "npm run cover && ((cat coverage/lcov.info | coveralls) || exit 0)"
   },
   "dependencies": {
     "acorn": "^2.6.4",
@@ -21,6 +22,7 @@
   },
   "devDependencies": {
     "browserify": "^12.0.1",
+    "coveralls": "^2.11.4",
     "istanbul": "^0.4.1",
     "tape": "^4.2.2"
   },
