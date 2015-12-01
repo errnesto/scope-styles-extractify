@@ -11,10 +11,10 @@ var cssKey = require('scope-styles/lib/css-symbol');
 var extractedKey = require('./extracted-key');
 
 module.exports = function(browserify, options) {
+  var output = options.output || options.o;
   var files = [];
   var contents = {};
   var cssStream;
-  var output = options.output;
 
   function extractionTransform(filename) {
     var transform = through2(function(buf, enc, next) {
@@ -80,8 +80,6 @@ module.exports = function(browserify, options) {
       return inlinedModule;
     }
   }
-
-  if (options.output) output = path.relative(options.rootDir, options.output);
 
   browserify.transform(extractionTransform, {
     global: true

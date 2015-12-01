@@ -5,7 +5,7 @@ Browserify plugin to extract [scope-styles](https://github.com/rtsao/scope-style
 ### CLI usage
 
 ```
-browserify -p [ scope-styles-extractify -o dist/main.css ] example/index.js
+browserify -p [ scope-styles-extractify -o dist/main.css ] index.js
 ```
 
 ### API usage
@@ -13,24 +13,21 @@ browserify -p [ scope-styles-extractify -o dist/main.css ] example/index.js
 Write to file:
 ```javascript
 var browserify = require('browserify');
+var extractify = require('scoped-styles-extractify');
 
 var b = browserify('./main.js');
-b.plugin(require('scoped-styles-extractify'), {
-  rootDir: __dirname,
-  output: './path/to/scoped.css'
-});
+b.plugin(extractify, {output: './dist/scoped.css'});
 b.bundle();
 ```
 
 Or grab output stream:
 ```javascript
-var browserify = require('browserify');
 var fs = require('fs');
+var browserify = require('browserify');
+var extractify = require('scoped-styles-extractify');
 
 var b = browserify('./main.js');
-b.plugin(require('scoped-styles-extractify'), {
-  rootDir: __dirname
-});
+b.plugin(extractify);
 
 var bundle = b.bundle();
 bundle.on('scoped_css_stream', function (css) {
