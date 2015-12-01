@@ -1,6 +1,6 @@
 # scope-styles-extractify
 
-Browserify plugin to extract scope-styles css into an external bundle
+Browserify plugin to extract [scope-styles](https://github.com/rtsao/scope-styles) css into an external bundle
 
 ### CLI usage
 
