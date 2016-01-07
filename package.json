@@ -1,6 +1,6 @@
 {
   "name": "scope-styles-extractify",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "description": "Browserify plugin to extract scope-styles css into an external bundle",
   "author": "Ryan Tsao <ryan.j.tsao@gmail.com>",
   "main": "index.js",
