@@ -112,7 +112,7 @@ module.exports = function(browserify, options) {
   });
 };
 
-var exporter = ';module.exports[require("scope-styles-extractify/extracted-key")] = require("scope-styles-extractify/instrumented").getResults(__filename);';
+var exporter = '\n;module.exports[require("scope-styles-extractify/extracted-key")] = require("scope-styles-extractify/instrumented").getResults(__filename);';
 
 function getResults(instrumentedModule, filename) {
   return requireFromString(instrumentedModule + exporter, filename)[extractedKey];
