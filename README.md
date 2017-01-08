@@ -9,7 +9,7 @@ Browserify plugin to extract [scope-styles](https://github.com/rtsao/scope-style
 ### CLI usage
 
 ```
-browserify -p [ scope-styles-extractify -o dist/main.css ] index.js
+browserify -p [ scope-styles-extractify -o dist/main.css -e js ] index.js
 ```
 
 ### API usage
