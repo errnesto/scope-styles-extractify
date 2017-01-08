@@ -12,6 +12,8 @@ var extractedKey = require('./extracted-key');
 
 module.exports = function(browserify, options) {
   var output = options.output || options.o;
+  var extensions = options.extensions || options.e;
+  extensions = extensions.split(',')
   var files = [];
   var contents = {};
   var cssStream;
@@ -43,15 +45,18 @@ module.exports = function(browserify, options) {
 
   function extractCss(source, filename) {
     var didInstrument = false;
-    var instrumentedModule = transformAst(source, function instrumentModule(node) {
-      if (isRequireScopeStyles(node)) {
-        var quote = node.arguments[0].raw[0][0];
-        var str = quote + 'scope-styles-extractify/instrumented' + quote;
-        node.arguments[0].update(str);
-        node.update(node.source() + '.instrument(__filename)');
-        didInstrument = true;
-      }
-    });
+    var regExp = new RegExp('\\.(' + extensions.join('|') + ')$');
+    if (regExp.test(filename)) {
+      var instrumentedModule = transformAst(source, function instrumentModule(node) {
+        if (isRequireScopeStyles(node)) {
+          var quote = node.arguments[0].raw[0][0];
+          var str = quote + 'scope-styles-extractify/instrumented' + quote;
+          node.arguments[0].update(str);
+          node.update(node.source() + '.instrument(__filename)');
+          didInstrument = true;
+        }
+      });
+    }
 
     if (didInstrument) {
       var results = getResults(instrumentedModule, filename)
